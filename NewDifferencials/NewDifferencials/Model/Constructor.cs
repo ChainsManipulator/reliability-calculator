@@ -1,11 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System.Collections.Generic;
 
 namespace NewDifferencials.Model
 {
-    public class FirstConstructor
+    public class Constructor
     {
         private List<P> pi;
         private List<P> pij;
@@ -35,8 +32,10 @@ namespace NewDifferencials.Model
                 {
                     pi.Add(new P(0, h));
                 }
+
                 pij.Add(new P(0, h));
             }
+
             pi.Add(new P(0, h));
 
             for (int j = 0; j < pij.Count; j++)

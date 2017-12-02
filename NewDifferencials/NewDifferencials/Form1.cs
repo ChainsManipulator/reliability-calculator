@@ -1,8 +1,8 @@
 ﻿using System;
 using System.ComponentModel;
+using System.Globalization;
 using System.Windows.Forms;
 using NewDifferencials.Controller;
-using NewDifferencials.Model;
 using NewDifferencials.View;
 
 namespace NewDifferencials
@@ -15,16 +15,15 @@ namespace NewDifferencials
             Drawer.Clear(zedGraphControl2);
         }
 
-        private ModelType type;
         private ResultContainer Result;
-        private IDataContainer Source;
-        private int ColorCounter = 0;
+        private DataContainer Source;
+        private int ColorCounter;
 
         private void backgroundWorker1_DoWork(object sender, DoWorkEventArgs e)
         {
             BackgroundWorker Worker = sender as BackgroundWorker;
-            IController calc = ControllerFactory.CreateController(type);
-            e.Result = calc.Calculate((IDataContainer)e.Argument);
+            Controller.Controller calc = new Controller.Controller();
+            e.Result = calc.Calculate((DataContainer)e.Argument);
             if (Worker.CancellationPending)
             {
                 e.Cancel = true;
@@ -52,13 +51,13 @@ namespace NewDifferencials
                     dataGridView1.Rows[i].Cells[0].Value = Result.Times[i];
                     dataGridView1.Rows[i].Cells[1].Value = Result.Values[i];
                     dataGridView1.Rows[i].Cells[2].Value = Result.Errors[i];
-                    if(i!=0)
+                    if (i != 0)
                     {
-                        AverageLifeTime += (Result.Values[i] - Result.Values[i - 1])*Result.Times[i];
+                        AverageLifeTime += (Result.Values[i] - Result.Values[i - 1]) * Result.Times[i];
                     }
-                    
+
                 }
-                label15.Text = AverageLifeTime.ToString("N6");
+                textBox5.Text = AverageLifeTime.ToString("N6");
                 Drawer.DrawGraph(zedGraphControl2, Result.Times, Result.Values, "Исследование " + (ColorCounter + 1).ToString(), "Вероятность безотказной работы системы", Drawer.GetColor(ColorCounter));
                 ColorCounter++;
             }
@@ -89,31 +88,11 @@ namespace NewDifferencials
             backgroundWorker1.RunWorkerAsync(Source);
         }
 
-        private IDataContainer ParseData()
+        private DataContainer ParseData()
         {
-            switch (comboBox1.Text)
-            {
-                case "Первая модель":
-                {
-                    type = ModelType.First;
-                    break;
-                }
-                case "Вторая модель":
-                {
-                    type = ModelType.Second;
-                    break;
-                }
-                case "Третья модель":
-                {
-                    type = ModelType.Third;
-                    break;
-                }
-                default:
-                    throw new Exception("Неизвестный тип модели");
-            }
-            IDataContainer Temp = ContainerFactory.CreateContainer(type);
-            
-            double interval = Convert.ToDouble(textBox6.Text);
+            DataContainer Temp = new DataContainer();
+
+            double interval = Convert.ToDouble(textBox6.Text, CultureInfo.InvariantCulture);
             if (interval < 0)
             {
                 throw new Exception("Интервал времени должен быть положительным");
@@ -134,38 +113,26 @@ namespace NewDifferencials
             }
             Temp.ModelComponents = components;
 
-            double Intensity = Convert.ToDouble(textBox1.Text);
+            double Intensity = Convert.ToDouble(textBox1.Text, CultureInfo.InvariantCulture);
             if (Intensity < 0)
             {
                 throw new Exception("Ни одна из интенсивностей не должна быть меньше нуля");
             }
             Temp.Mu = Intensity;
 
-            Intensity = Convert.ToDouble(textBox2.Text);
+            Intensity = Convert.ToDouble(textBox2.Text, CultureInfo.InvariantCulture);
             if (Intensity < 0)
             {
                 throw new Exception("Ни одна из интенсивностей не должна быть меньше нуля");
             }
             Temp.Lambda = Intensity;
 
-            switch (type)
-            {
-                case ModelType.First:
-                    FirstParse((FirstDataContainer)Temp);
-                    break;
-                case ModelType.Second:
-                    SecondParse((SecondDataContainer)Temp);
-                    break;
-                case ModelType.Third:
-                    ThirdParse((ThirdDataContainer)Temp);
-                    break;
-                default: throw new Exception("Неизвестный тип модели");
-            }
+            FirstParse(Temp);
 
             return Temp;
         }
 
-        private void FirstParse(FirstDataContainer dataContainer)
+        private void FirstParse(DataContainer dataContainer)
         {
             double Intensity = Convert.ToDouble(textBox3.Text);
             if (Intensity < 0)
@@ -173,75 +140,6 @@ namespace NewDifferencials
                 throw new Exception("Ни одна из интенсивностей не должна быть меньше нуля");
             }
             dataContainer.Mui = Intensity;
-        }
-
-        private void SecondParse(SecondDataContainer dataContainer)
-        {
-            double Intensity = Convert.ToDouble(textBox3.Text);
-            if (Intensity < 0)
-            {
-                throw new Exception("Ни одна из интенсивностей не должна быть меньше нуля");
-            }
-            dataContainer.Mui = Intensity;
-
-            Intensity = Convert.ToDouble(textBox5.Text);
-            if (Intensity < 0)
-            {
-                throw new Exception("Ни одна из интенсивностей не должна быть меньше нуля");
-            }
-            dataContainer.e = Intensity;
-
-            Intensity = Convert.ToDouble(textBox4.Text);
-            if (Intensity < 0)
-            {
-                throw new Exception("Ни одна из интенсивностей не должна быть меньше нуля");
-            }
-            dataContainer.v = Intensity;
-        }
-
-        private void ThirdParse(ThirdDataContainer dataContainer)
-        {
-            double Intensity = Convert.ToDouble(textBox5.Text);
-            if (Intensity < 0)
-            {
-                throw new Exception("Ни одна из интенсивностей не должна быть меньше нуля");
-            }
-            dataContainer.e = Intensity;
-
-            Intensity = Convert.ToDouble(textBox4.Text);
-            if (Intensity < 0)
-            {
-                throw new Exception("Ни одна из интенсивностей не должна быть меньше нуля");
-            }
-            dataContainer.v = Intensity;
-
-            Intensity = Convert.ToDouble(textBox3.Text);
-            if (Intensity < 0)
-            {
-                throw new Exception("Ни одна из интенсивностей не должна быть меньше нуля");
-            }
-            dataContainer.Mu1 = Intensity;
-
-            Intensity = Convert.ToDouble(textBox9.Text);
-            if (Intensity < 0)
-            {
-                throw new Exception("Ни одна из интенсивностей не должна быть меньше нуля");
-            }
-            dataContainer.Mu2 = Intensity;
-
-            Intensity = Convert.ToDouble(textBox11.Text);
-            if (Intensity < 0)
-            {
-                throw new Exception("Ни одна из интенсивностей не должна быть меньше нуля");
-            }
-            dataContainer.Mu3 = Intensity;
-
-            Intensity = Convert.ToDouble(textBox10.Text);
-            if (Intensity < 0)
-            {
-                throw new Exception("Ни одна из интенсивностей не должна быть меньше нуля");
-            }
-            dataContainer.Mu4 = Intensity;
         }
 
         private void textBox7_TextChanged(object sender, EventArgs e)
@@ -258,6 +156,7 @@ namespace NewDifferencials
         {
             int steps;
             double period;
+
             try
             {
                 steps = Convert.ToInt32(textBox7.Text);
@@ -265,84 +164,17 @@ namespace NewDifferencials
                 if ((period > 0) && (steps > 0))
                 {
                     double step = period / steps;
-                    label8.Text = "Размер шага: " + step.ToString();
+                    textBox4.Text = step.ToString();
                 }
                 else
                 {
-                    label8.Text = "Размер шага неизвестен";
+                    textBox4.Text = "Неизвестен";
                 }
             }
             catch (Exception)
             {
-                label8.Text = "Размер шага неизвестен";
-                return;
+                textBox4.Text = "Неизвестен";
             }
-        }
-
-        private void comboBox1_TextChanged(object sender, EventArgs e)
-        {
-            switch (comboBox1.Text)
-            {
-                case "Первая модель":
-                    SetFirstModel();
-                    break;
-                case "Вторая модель":
-                    SetSecondModel();
-                    break;
-                case "Третья модель":
-                    SetThirdModel();
-                    break;
-            }
-        }
-
-        private void SetFirstModel()
-        {
-            textBox4.Visible = false;
-            textBox5.Visible = false;
-            textBox9.Visible = false;
-            textBox10.Visible = false;
-            textBox11.Visible = false;
-            label4.Visible = false;
-            label5.Visible = false;
-            label11.Visible = false;
-            label12.Visible = false;
-            label13.Visible = false;
-            label3.Text = "μ i";
-        }
-
-        private void SetSecondModel()
-        {
-            textBox4.Visible = true;
-            textBox5.Visible = true;
-            label4.Visible = true;
-            label5.Visible = true;
-            label11.Visible = false;
-            label12.Visible = false;
-            label13.Visible = false;
-            textBox9.Visible = false;
-            textBox10.Visible = false;
-            textBox11.Visible = false;
-            label3.Text = "μ i";
-        }
-
-        private void SetThirdModel()
-        {
-            textBox4.Visible = true;
-            textBox5.Visible = true;
-            textBox9.Visible = true;
-            textBox10.Visible = true;
-            textBox11.Visible = true;
-            label4.Visible = true;
-            label5.Visible = true;
-            label11.Visible = true;
-            label12.Visible = true;
-            label13.Visible = true;
-            label3.Text = "μ 1";
-        }
-
-        private void comboBox1_SelectedIndexChanged(object sender, EventArgs e)
-        {
-
         }
     }
 }

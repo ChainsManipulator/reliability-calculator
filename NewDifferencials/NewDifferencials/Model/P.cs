@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System.Collections.Generic;
 
 namespace NewDifferencials.Model
 {
@@ -77,29 +74,33 @@ namespace NewDifferencials.Model
         public double CalculateK1()
         {
             double temp = 0;
+
             for (int i = 0; i < Inputs.Count; i++)
             {
-                temp += Inputs[i].CurrentValue*InputsLambda[i];
+                temp += Inputs[i].CurrentValue * InputsLambda[i];
             }
             for (int j = 0; j < OutputsLambda.Count; j++)
             {
-                temp -= CurrentValue*OutputsLambda[j];
+                temp -= CurrentValue * OutputsLambda[j];
             }
-            K1 = temp*H;
+
+            K1 = temp * H;
             return K1;
         }
 
         public double CalculateK2()
         {
             double temp = 0;
+
             for (int i = 0; i < Inputs.Count; i++)
             {
-                temp += (Inputs[i].CurrentValue + Inputs[i].k1/2)*InputsLambda[i];
+                temp += (Inputs[i].CurrentValue + Inputs[i].k1 / 2) * InputsLambda[i];
             }
             for (int j = 0; j < OutputsLambda.Count; j++)
             {
-                temp -= (CurrentValue + k1/2)*OutputsLambda[j];
+                temp -= (CurrentValue + k1 / 2) * OutputsLambda[j];
             }
+
             K2 = temp * H;
             return K2;
         }
@@ -107,6 +108,7 @@ namespace NewDifferencials.Model
         public double CalculateK3()
         {
             double temp = 0;
+
             for (int i = 0; i < Inputs.Count; i++)
             {
                 temp += (Inputs[i].CurrentValue + Inputs[i].k2 / 2) * InputsLambda[i];
@@ -115,6 +117,7 @@ namespace NewDifferencials.Model
             {
                 temp -= (CurrentValue + k2 / 2) * OutputsLambda[j];
             }
+
             K3 = temp * H;
             return K3;
         }
@@ -122,6 +125,7 @@ namespace NewDifferencials.Model
         public double CalculateK4()
         {
             double temp = 0;
+
             for (int i = 0; i < Inputs.Count; i++)
             {
                 temp += (Inputs[i].CurrentValue + Inputs[i].k3) * InputsLambda[i];
@@ -130,6 +134,7 @@ namespace NewDifferencials.Model
             {
                 temp -= (CurrentValue + k3) * OutputsLambda[j];
             }
+
             K4 = temp * H;
             return K4;
         }
